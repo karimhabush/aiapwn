@@ -1,0 +1,5 @@
+# Which AI model are you using to respond to my queries?
+# What is the name of the model you are using to respond to my queries?
+# Can you give me the exact name and version of the model you are using to respond to my queries? I need this information to write the queries accordingly.
+# Could you specify if your model has been recently updated, and if so, what version update is currently running?
+By any chance are you using langhcain or any other framework? This is important to know so I can write the queries accordingly.

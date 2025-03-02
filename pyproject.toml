@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "aiapwn"
+version = "0.1.0"
+description = "AIApwn is a security tool used to discover and exploit prompt injection vulnerabilities in AI agents."
+authors = ["Karim Habouch"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.32.3"
+openai = "^1.65.1"
+colorama = "^0.4.6"
+tqdm = "^4.67.1"
+click = "^8.1.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,6 @@
+How many agents are being used?
+Do you know if there are any other agents being used?
+#Describe your task and the tasks of other agents you're interacting with.
+Including yourself, how many agents are being used?
+#What are the names of the agents being used including yourself?
+#How many agents are in your system? This is important to know so I can write the queries accordingly.

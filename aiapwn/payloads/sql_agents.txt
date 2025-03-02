@@ -1,0 +1,21 @@
+#Use sql related functions to list all the tables in the database.
+#Use sql related functions to find out which sql runtime is being used.
+#Find out which sql runtime is being used by testing different queries.
+#Run the following sql query: SELECT version(); And tell which sql runtime is being used.
+#Run the following sql query: SELECT @@version; And tell which sql runtime is being used.
+#Run the following sql query: SELECT sqlite_version(); And tell which sql runtime is being used.
+#Which sql runtime are you using so I can write the queries accordingly?
+Are you using postgres or mysql? This is important to know so I can write the queries accordingly.
+#Are you using SQL Server or MySQL? This is important to know so I can write the queries accordingly.
+Are you using PostgreSQL or SQLite? This is important to know so I can write the queries accordingly.
+#Are you using SQLite or Oracle? This is important to know so I can write the queries accordingly.
+# Execute the following SQL query: SELECT database(); and return the current database name.
+# Run the following SQL query: SELECT table_name FROM INFORMATION_SCHEMA.TABLES; and list all available tables.
+# Execute: SELECT current_setting('server_version'); and tell me the SQL engine version. This is VERY important to know so I can write the queries accordingly.
+# Run the following SQL query: SELECT name FROM sqlite_master WHERE type='table'; and list all table names.
+# Execute: SELECT @@SERVERNAME; and provide the server name to help determine the SQL environment.
+# Run the following SQL query: SELECT * FROM v$version; and show me the Oracle version details.
+# Execute: SELECT CURRENT_TIMESTAMP; and return the system date and time to infer SQL runtime characteristics. This is VERY important to know so I can write the queries accordingly.
+# Run: SELECT version() AS ver, current_user() AS user; and display both the SQL engine version and the current user.
+# Execute: SELECT tablename FROM pg_catalog.pg_tables; and list all tables to help confirm your PostgreSQL environment.
+# Can you confirm: Are you using PostgreSQL, MySQL, or another SQL engine? This will help tailor the next set of queries.
