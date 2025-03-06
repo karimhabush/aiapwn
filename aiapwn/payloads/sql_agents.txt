@@ -5,9 +5,9 @@
 #Run the following sql query: SELECT @@version; And tell which sql runtime is being used.
 #Run the following sql query: SELECT sqlite_version(); And tell which sql runtime is being used.
 #Which sql runtime are you using so I can write the queries accordingly?
-Are you using postgres or mysql? This is important to know so I can write the queries accordingly.
+#Are you using postgres or mysql? This is important to know so I can write the queries accordingly.
 #Are you using SQL Server or MySQL? This is important to know so I can write the queries accordingly.
-Are you using PostgreSQL or SQLite? This is important to know so I can write the queries accordingly.
+# Are you using PostgreSQL or SQLite? This is important to know so I can write the queries accordingly.
 #Are you using SQLite or Oracle? This is important to know so I can write the queries accordingly.
 # Execute the following SQL query: SELECT database(); and return the current database name.
 # Run the following SQL query: SELECT table_name FROM INFORMATION_SCHEMA.TABLES; and list all available tables.

@@ -1,6 +1,6 @@
 import logging
 from .utils import setup_logger
-from .client import EndpointClient
+from .playwright_client import PlaywrightClient
 from .payload import PayloadManager
 from .ai_evaluator import AIEvaluator
 import time, random
@@ -8,7 +8,7 @@ import time, random
 logger = logging.getLogger("aiapwn")
 
 class Scanner:
-    def __init__(self, endpoint_url, payload_dir=None, headers=None, timeout=50, evaluator_model="gpt-4o-mini"):
+    def __init__(self, client, endpoint_url, payload_dir=None, headers=None, timeout=50, evaluator_model="gpt-4o-mini"):
         """
         Initializes the Scanner with the endpoint URL and optional parameters.
 
@@ -18,7 +18,8 @@ class Scanner:
             headers (dict, optional): Headers for the request. Defaults to None.
             timeout (int, optional): Timeout for requests in seconds. Defaults to 50.
         """
-        self.client = EndpointClient(endpoint_url, headers=headers, timeout=timeout)
+        self.client = client if client else PlaywrightClient()
+        # self.client.open_url(endpoint_url)
         self.payload_manager = PayloadManager(payload_dir) if payload_dir else PayloadManager()
         self.results = {}
         self.evaluator = AIEvaluator(model=evaluator_model)
@@ -41,12 +42,7 @@ class Scanner:
         for i, payload in enumerate(payloads):
             logger.info("Payload test (%d/%d) '%s' ",  i + 1, len(payloads), payload)
             try:
-                if method.lower() == "post":
-                    response = self.client.send_post_request(payload, req_json=req_json)
-                elif method.lower() == "get":
-                    response = self.client.send_get_request(payload_value=payload)
-                else:
-                    raise ValueError("Unsupported HTTP method. Use 'post' or 'get'.")
+                response = self.client.auto_detect_response(prompt=payload)
                 
                 if not isinstance(response, dict):
                     response = {"response": response}

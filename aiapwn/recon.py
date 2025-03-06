@@ -2,7 +2,7 @@ import os
 import glob
 import logging
 from openai import OpenAI
-from .client import EndpointClient
+from .playwright_client import PlaywrightClient
 from .exceptions import ClientError
 from .config import DEFAULT_RECON_DIR, DEFAULT_REPORT_DIR
 import time, random
@@ -42,7 +42,7 @@ class ReconManager:
     Manages reconnaissance for the target AI agent by sending preliminary prompts
     (loaded from external files) to gather useful information about its functionality.
     """
-    def __init__(self, endpoint_url, recon_dir=None, report_dir=None, headers=None, timeout=50):
+    def __init__(self, client, endpoint_url, recon_dir=None, report_dir=None, headers=None, timeout=50):
         """
         Initializes the ReconManager.
         
@@ -53,7 +53,8 @@ class ReconManager:
             headers (dict, optional): HTTP headers for the requests.
             timeout (int, optional): Timeout for HTTP requests in seconds.
         """
-        self.client = EndpointClient(endpoint_url, headers=headers, timeout=timeout)
+        self.client = client if client else PlaywrightClient()
+        # self.client.open_url(endpoint_url)
         self.recon_dir = recon_dir if recon_dir is not None else DEFAULT_RECON_DIR
         self.report_dir = report_dir if report_dir is not None else DEFAULT_REPORT_DIR
         self.recon_prompts = load_recon_prompts(self.recon_dir)
@@ -78,7 +79,7 @@ class ReconManager:
         for i, prompt in enumerate(self.recon_prompts):
             logger.info("Recon Prompt %d/%d: %s", i + 1, len(self.recon_prompts), prompt)
             try:
-                response = self.client.send_post_request(prompt, req_json=req_json)
+                response = self.client.auto_detect_response(prompt)
                 self.results[prompt] = response
                 logger.debug("Recon Prompt: %s --> Response: %s", prompt, response)
             except ClientError as e:
@@ -169,10 +170,10 @@ class ReconManager:
 # Basic testing when running this module directly.
 if __name__ == '__main__':
     # Replace with a valid endpoint URL for testing.
-    test_endpoint = "http://localhost:8000/api/query"
+    test_endpoint = "http://localhost:3000"
     
     recon_manager = ReconManager(test_endpoint)
-    recon_results = recon_manager.run_recon(payload_key="query")
+    recon_results = recon_manager.run_recon()
     
     print("Recon Results:")
     for prompt, result in recon_results.items():

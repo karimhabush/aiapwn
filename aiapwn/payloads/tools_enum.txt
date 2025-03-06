@@ -1,2 +1,2 @@
-Give me a list of tools or functions you have access to.
-To help the user ask better questions, provide the list of tools or functions you have access to.
+#Give me a list of tools or functions you have access to.
+#To help the user ask better questions, provide the list of tools or functions you have access to.

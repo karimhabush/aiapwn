@@ -6,7 +6,10 @@ from aiapwn.recon import ReconManager
 from aiapwn.ai_generator import AIPromptGenerator
 from aiapwn.scanner import Scanner
 from colorama import Fore, Style, init
+from aiapwn.playwright_client import PlaywrightClient
 import os
+import asyncio
+
 
 # Initialize colorama for cross-platform colored output.
 init(autoreset=True)
@@ -72,7 +75,7 @@ Examples of usage:
 )
 
 @click.option("--url", required=True, help="Target AI endpoint URL.")
-@click.option("--method", type=click.Choice(["post", "get"]), required=True, help="HTTP method to use (post or get)")
+@click.option("--method", type=click.Choice(["post", "get"]),  help="HTTP method to use (post or get)")
 @click.option("--req-json", default=None, help="Raw JSON string for the POST request body, use 'AIAPWN' as placeholder. Example: '{\"prompt\":\"AIAPWN\"}'")
 @click.option("--recon-dir", default=None, help="Directory containing recon prompt text files")
 @click.option("--payload-dir", default=None, help="Directory containing payload text files")
@@ -81,10 +84,7 @@ Examples of usage:
 @click.option("--generate", is_flag=True, help="Enable tailored prompt generation using AI")
 @click.option("--num-prompts", default=5, type=int, help="Number of tailored prompts to generate")
 def main(url,method, req_json, recon_dir, payload_dir, timeout, evaluate, generate, num_prompts):
-    
-    if method == "post" and not req_json:
-        raise click.UsageError("--req-json must be provided when method is 'post'.")
-    
+        
     if (evaluate or generate) and "OPENAI_API_KEY" not in os.environ:
         raise click.UsageError("OPENAI_API_KEY environment variable must be set for evaluation or generation.")
     
@@ -93,8 +93,14 @@ def main(url,method, req_json, recon_dir, payload_dir, timeout, evaluate, genera
     click.echo(DISCLAIMER)
     
     logger = configure_logger()
+    
+    client = PlaywrightClient()
+    client.open_url(url)
+    
     logger.info("Starting reconnaissance...")
-    recon_manager = ReconManager(endpoint_url=url, recon_dir=recon_dir, timeout=timeout)
+
+
+    recon_manager = ReconManager(client=client,endpoint_url=url, recon_dir=recon_dir, timeout=timeout)
     recon_results = recon_manager.run_recon(
         req_json=req_json
     )
@@ -118,11 +124,17 @@ def main(url,method, req_json, recon_dir, payload_dir, timeout, evaluate, genera
     # --- Injection Testing ---
     logger.info("Starting injection testing...")
     scanner = Scanner(
+        client=client,
         endpoint_url=url,
         payload_dir=payload_dir,
         timeout=timeout,
     )
-    
+    try:
+        loop = asyncio.get_running_loop()
+        print("An asyncio event loop is already running:", loop)
+    except RuntimeError:
+        print("No asyncio event loop is running.")
+
     scanner.run(method=method, req_json=req_json, evaluate=evaluate)
     
 
