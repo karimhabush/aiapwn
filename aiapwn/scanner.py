@@ -8,34 +8,19 @@ import time, random
 logger = logging.getLogger("aiapwn")
 
 class Scanner:
-    def __init__(self, client, endpoint_url, payload_dir=None, headers=None, timeout=50, evaluator_model="gpt-4o-mini"):
+    def __init__(self, client, payload_dir=None, evaluator_model="gpt-4o-mini"):
         """
         Initializes the Scanner with the endpoint URL and optional parameters.
-
-        Args:
-            endpoint_url (str): The URL of the AI endpoint.
-            payload_dir (str, optional): Directory for loading custom payloads. Defaults to None.
-            headers (dict, optional): Headers for the request. Defaults to None.
-            timeout (int, optional): Timeout for requests in seconds. Defaults to 50.
         """
         self.client = client if client else PlaywrightClient()
-        # self.client.open_url(endpoint_url)
         self.payload_manager = PayloadManager(payload_dir) if payload_dir else PayloadManager()
         self.results = {}
         self.evaluator = AIEvaluator(model=evaluator_model)
 
     
-    def run(self, method="post", req_json='{"prompt":"AIAPWN"}', evaluate=False):
+    def run(self, evaluate=False):
         """
         Executes the scan by iterating through each payload and sending it to the endpoint.
-
-        Args:
-            method (str, optional): HTTP method to use ("post" or "get"). Defaults to "post".
-            key (str, optional): The key to use in the payload. For POST requests, this is the JSON key;
-                                 for GET requests, the query parameter key.
-
-        Returns:
-            dict: A dictionary mapping each payload to its corresponding response or error details.
         """
         payloads = self.payload_manager.get_payloads()
         self.results = {}
@@ -66,15 +51,3 @@ class Scanner:
 
         return self.results
     
-
-
-# Basic testing when running this module directly.
-if __name__ == '__main__':
-    # Replace with a valid endpoint URL for testing.
-    test_endpoint = "http://localhost:8000/api/query"
-    scanner = Scanner(test_endpoint)
-    results = scanner.run(method="post", key="query", evaluate=True)
-    
-    print("Scan Results:")
-    for payload, result in results.items():
-        print(f"Payload: {payload}\nResponse: {result}\n")

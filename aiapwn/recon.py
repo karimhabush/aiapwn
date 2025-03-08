@@ -42,34 +42,20 @@ class ReconManager:
     Manages reconnaissance for the target AI agent by sending preliminary prompts
     (loaded from external files) to gather useful information about its functionality.
     """
-    def __init__(self, client, endpoint_url, recon_dir=None, report_dir=None, headers=None, timeout=50):
+    def __init__(self, client, recon_dir=None, report_dir=None):
         """
         Initializes the ReconManager.
         
-        Args:
-            endpoint_url (str): The target AI endpoint URL.
-            recon_dir (str, optional): Directory where recon prompt text files are stored.
-                                       Defaults to DEFAULT_RECON_DIR.
-            headers (dict, optional): HTTP headers for the requests.
-            timeout (int, optional): Timeout for HTTP requests in seconds.
         """
         self.client = client if client else PlaywrightClient()
-        # self.client.open_url(endpoint_url)
         self.recon_dir = recon_dir if recon_dir is not None else DEFAULT_RECON_DIR
         self.report_dir = report_dir if report_dir is not None else DEFAULT_REPORT_DIR
         self.recon_prompts = load_recon_prompts(self.recon_dir)
         self.results = {}
 
-    def run_recon(self, method="post", req_json='{"prompt":"AIAPWN"}'):
+    def run_recon(self):
         """
         Sends each reconnaissance prompt to the endpoint and collects the responses.
-        
-        Args:
-            payload_key (str, optional): The JSON key used for the prompt in the request.
-                                         Defaults to "prompt".
-        
-        Returns:
-            dict: A dictionary mapping each recon prompt to its corresponding response or error.
         """
         self.results.clear()
         if not self.recon_prompts:
@@ -86,7 +72,7 @@ class ReconManager:
                 self.results[prompt] = {"error": str(e)}
                 logger.error("Recon Prompt: %s --> Error: %s", prompt, str(e))
             
-            sleep_time = random.uniform(1, 3)
+            sleep_time = random.uniform(1, 5)
             logger.info("Sleeping for %.2f seconds before the next request...", sleep_time)
             time.sleep(sleep_time)
             
