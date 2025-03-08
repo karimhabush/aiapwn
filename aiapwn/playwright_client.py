@@ -3,6 +3,7 @@ import logging
 from typing import Optional, List, Dict, Any
 from playwright.sync_api import sync_playwright, TimeoutError
 from .utils import setup_logger
+from colorama import Style, Fore
 
 
 
@@ -83,11 +84,11 @@ class PlaywrightClient:
         if not candidates:
             return None
 
-        print("Detected submit buttons:")
+        print(f"{Fore.YELLOW}{Style.BRIGHT}Detected submit buttons:{Style.RESET_ALL}")
         for i, button in enumerate(candidates):
-            print(f"{i}: {button}")
+            print(f"{Fore.GREEN}{Style.BRIGHT}[{i}]{Style.RESET_ALL}: {Fore.BLUE}{button}{Style.RESET_ALL}")
 
-        choice = input("Enter the index of the submit button to use: ")
+        choice = input(f"{Fore.YELLOW}{Style.BRIGHT}Enter the index of the submit button to use: {Style.RESET_ALL}")
 
         try:
             choice_int = int(choice)
@@ -95,9 +96,9 @@ class PlaywrightClient:
                 self.submit_button_index = choice_int  # Store the chosen index for future use.
                 return choice_int
             else:
-                print("Invalid choice. Please enter a valid index.")
+                print(f"{Fore.RED}{Style.BRIGHT}Invalid choice. Please enter a valid index.{Style.RESET_ALL}")
         except ValueError:
-            print("Invalid input. Please enter a number.")
+            print(f"{Fore.RED}{Style.BRIGHT}Invalid input. Please enter a number.{Style.RESET_ALL}")
         return None
 
 
@@ -110,11 +111,11 @@ class PlaywrightClient:
         if not candidates:
             return None
 
-        print("Detected input fields:")
+        print(f"{Fore.YELLOW}{Style.BRIGHT}Detected input fields:{Style.RESET_ALL}")
         for i, field in enumerate(candidates):
-            print(f"{i}: {field}")
+            print(f"{Fore.GREEN}{Style.BRIGHT}[{i}]{Style.RESET_ALL}: {Fore.BLUE}{field}{Style.RESET_ALL}")
 
-        choice = input("Enter the index of the input field to use: ")
+        choice = input(f"{Fore.YELLOW}{Style.BRIGHT}Enter the index of the input field to use: {Style.RESET_ALL}")
 
         try:
             choice_int = int(choice)
