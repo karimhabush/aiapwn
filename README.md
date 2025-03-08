@@ -1,14 +1,9 @@
 # aiapwn
-# AIAPWN - AI Agent Prompt Injection Testing Tool
 
-AIAPWN is a simple tool for testing AI agents against prompt injection vulnerabilities.
+AIAPWN is a simple tool that automates the process of detecting prompt injection vulnerabilities in AI agents and LLMs. It includes a recon system that profiles the target AI, a testing engine that tries various prompt injections, and a smart evaluation of resutls. - The tool can also generate custom payloads based on the AI's behavior.
 
-## Features
+![Demo](images/demo.gif)
 
-- Recon to understand agent capabilities
-- Payload testing with enabled prompts
-- Evaluation of injection attempts using GenAI
-- Generation of tailored injection prompts
 
 ## Installation
 ### Prerequisites
@@ -24,15 +19,16 @@ AIAPWN is a simple tool for testing AI agents against prompt injection vulnerabi
    cd aiapwn
    ```
 
-2. Install dependencies with Poetry:
+2. Activate the virtual environment:
+   ```bash
+   poetry shell
+   ```
+
+3. Install dependencies with Poetry:
    ```bash
    poetry install
    ```
 
-3. Activate the virtual environment:
-   ```bash
-   poetry shell
-   ```
 
 ### Environment Setup
 
