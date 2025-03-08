@@ -9,7 +9,9 @@ from colorama import Fore, Style, init
 from aiapwn.playwright_client import PlaywrightClient
 import os
 import asyncio
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Initialize colorama for cross-platform colored output.
 init(autoreset=True)

@@ -40,7 +40,7 @@ class Scanner:
         payloads = self.payload_manager.get_payloads()
         self.results = {}
         for i, payload in enumerate(payloads):
-            logger.info("Payload test (%d/%d) '%s' ",  i + 1, len(payloads), payload)
+            logger.info("Payload test (%d/%d)",  i + 1, len(payloads))
             try:
                 response = self.client.auto_detect_response(prompt=payload)
                 

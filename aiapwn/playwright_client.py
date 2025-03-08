@@ -16,6 +16,7 @@ class PlaywrightClient:
         self.browser = self.playwright.chromium.launch(headless=headless)
         self.page = self.browser.new_page()
         self.input_field_index = None
+        self.submit_button_index = None
         self.baseline = ""
         logger.info("Initialized Playwright with headless=%s", headless)
 
@@ -47,6 +48,58 @@ class PlaywrightClient:
         else:
             logger.info("Detected %d input fields.", len(candidates))
         return candidates
+    
+    def auto_detect_submit_buttons(self) -> List[str]:
+        """Automatically detects submit buttons on the page."""
+        logger.info("Attempting to detect submit buttons...")
+        candidates = []
+        # Look for buttons and input[type="submit"]
+        locator = self.page.locator("button, input[type='submit']")
+        count = locator.count()
+        
+        for i in range(count):
+            element = locator.nth(i)
+            outer_html = element.evaluate("el => el.outerHTML")
+            candidates.append(outer_html)
+            
+        if not candidates:
+            logger.error("No submit buttons detected automatically.")
+        else:
+            logger.info("Detected %d submit buttons.", len(candidates))
+            
+        return candidates
+    
+    def choose_submit_button(self) -> Optional[int]:
+        """Allows the user to choose a submit button from detected candidates.
+        
+        Returns:
+            Optional[int]: The index of the chosen submit button, or None if no valid choice was made.
+        """
+        if self.submit_button_index is not None:
+            logger.info("Using previously selected submit button index: %s", self.submit_button_index)
+            return self.submit_button_index
+
+        candidates = self.auto_detect_submit_buttons()
+        if not candidates:
+            return None
+
+        print("Detected submit buttons:")
+        for i, button in enumerate(candidates):
+            print(f"{i}: {button}")
+
+        choice = input("Enter the index of the submit button to use: ")
+
+        try:
+            choice_int = int(choice)
+            if 0 <= choice_int < len(candidates):
+                self.submit_button_index = choice_int  # Store the chosen index for future use.
+                return choice_int
+            else:
+                print("Invalid choice. Please enter a valid index.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+        return None
+
 
     def choose_input_field(self) -> Optional[int]:
         if self.input_field_index is not None:
@@ -75,18 +128,31 @@ class PlaywrightClient:
         return None
     
     def send_prompt(self, prompt: str) -> None:
-        logger.info("Sending prompt: %s", prompt)
+        logger.debug("Sending prompt: %s", prompt)
 
         selected_index = self.choose_input_field()
         if selected_index is None:
             logger.error("No valid input field selected.")
             return
         
-        locator = self.page.locator("input, textarea, [contenteditable='true']")
-        element = locator.nth(selected_index)
-        element.fill("")
-        element.fill(prompt)
-        self.page.keyboard.press("Enter")
+        submit_index = self.choose_submit_button()
+        if submit_index is None:
+            logger.warning("No valid submit button selected. Will try to use Enter key instead.")
+        
+        # Handle input field
+        input_locator = self.page.locator("input, textarea, [contenteditable='true']")
+        input_element = input_locator.nth(selected_index)
+        input_element.fill("")
+        input_element.fill(prompt)
+        
+        # Handle submit button if available, otherwise use Enter key
+        if submit_index is not None:
+            submit_locator = self.page.locator("button, input[type='submit']")
+            submit_element = submit_locator.nth(submit_index)
+            submit_element.click()
+        else:
+            self.page.keyboard.press("Enter")
+            
         logger.info("Prompt sent successfully.")
     
     def update_baseline(self) -> None:
@@ -94,19 +160,24 @@ class PlaywrightClient:
         logger.info("Baseline updated.")
 
 
-    def auto_detect_response(self, prompt:str, timeout:int = 60000) -> str:
+    def auto_detect_response(self, prompt:str, timeout:int = 60000, stability_duration:int = 6000) -> str:
         """
         Sends a test prompt and uses a MutationObserver to detect new content in the response container.
         Returns a string containing the concatenated text of newly added nodes.
         
+        Args:
+            prompt: The text to send as a prompt
+            timeout: Maximum time (ms) to wait for a response
+            stability_duration: Time (ms) to wait with no changes before considering response complete
+        
         This helps you see which parts of the DOM change in response to a prompt so you can adjust
         the baseline selector if necessary.
         """
-        logger.info("Sending test prompt for auto-detection of response fields: %s", prompt)
+        logger.debug("Sending test prompt for auto-detection of response fields: %s", prompt)
         # Send the test prompt. (This will prompt the user to choose an input field if needed.)
         self.send_prompt(prompt)
         self.page.wait_for_load_state("domcontentloaded")
-        logger.info("Waiting for response...")
+        logger.debug("Waiting for response...")
         # Inject a MutationObserver into the page context to capture added text.
         script = f"""
         () => {{
@@ -117,33 +188,58 @@ class PlaywrightClient:
                     return;
                 }}
                 let addedText = "";
+                let lastChangeTime = Date.now();
+                let stabilityTimer = null;
+                
                 const observer = new MutationObserver((mutations, obs) => {{
+                    let hasNewContent = false;
                     mutations.forEach(mutation => {{
                         mutation.addedNodes.forEach(node => {{
                             if (node.nodeType === Node.TEXT_NODE) {{
                                 addedText += node.textContent;
+                                hasNewContent = true;
                             }} else if (node.nodeType === Node.ELEMENT_NODE) {{
                                 addedText += node.innerText;
+                                hasNewContent = true;
                             }}
                         }});
                     }});
-                    // If some new text has been added, resolve the promise.
-                    if (addedText.trim().length > 0) {{
-                        obs.disconnect();
-                        resolve(addedText.trim());
+                    
+                    // If we have new content, update the last change time
+                    if (hasNewContent) {{
+                        lastChangeTime = Date.now();
+                        // Clear any existing stability timer
+                        if (stabilityTimer) {{
+                            clearTimeout(stabilityTimer);
+                            stabilityTimer = null;
+                        }}
+                        
+                        // Set a new stability timer to check if content has stopped changing
+                        stabilityTimer = setTimeout(() => {{
+                            // If no changes for stability_duration ms, consider it complete
+                            if (Date.now() - lastChangeTime >= {stability_duration}) {{
+                                obs.disconnect();
+                                resolve(addedText.trim());
+                            }}
+                        }}, {stability_duration});
                     }}
                 }});
-                observer.observe(target, {{ childList: true, subtree: true }});
-                // Fallback: after {timeout} milliseconds, disconnect and resolve with what we've gathered.
+                
+                observer.observe(target, {{ childList: true, subtree: true, characterData: true }});
+                
+                // Fallback: after timeout milliseconds, disconnect and resolve with what we've gathered.
                 setTimeout(() => {{
                     observer.disconnect();
+                    if (stabilityTimer) {{
+                        clearTimeout(stabilityTimer);
+                    }}
                     resolve(addedText.trim());
                 }}, {timeout});
             }});
         }}
         """
         response_text = self.page.evaluate(script)
-        logger.info("MutationObserver detected added text: %s", response_text)
+        logger.debug("MutationObserver detected added text: %s", response_text)
         self.update_baseline()
         return response_text
 
