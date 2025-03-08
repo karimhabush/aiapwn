@@ -1,6 +1,6 @@
 # aiapwn
 
-AIAPWN is a simple tool that automates the process of detecting prompt injection vulnerabilities in AI agents and LLMs. It includes a recon system that profiles the target AI, a testing engine that tries various prompt injections, and a smart evaluation of resutls. - The tool can also generate custom payloads based on the AI's behavior.
+aiapwn is a simple tool that automates the process of detecting prompt injection vulnerabilities in AI agents and LLMs. It includes a recon system that profiles the target AI, a testing engine that tries various prompt injections, and a smart evaluation of resutls. - The tool can also generate custom payloads based on the AI's behavior.
 
 ![Demo](images/demo.gif)
 
