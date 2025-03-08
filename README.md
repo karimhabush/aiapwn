@@ -15,7 +15,7 @@ aiapwn is a simple tool that automates the process of detecting prompt injection
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/aiapwn.git
+   git clone https://github.com/karimhabush/aiapwn.git
    cd aiapwn
    ```
 
